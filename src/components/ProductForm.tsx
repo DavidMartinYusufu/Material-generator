@@ -71,7 +71,7 @@ export const ProductForm: React.FC<Props> = ({
         </div>
         <div className="flex flex-wrap gap-2">
           {PRODUCT_PRESETS.map((preset) => {
-            const isSelected = product.name === preset.name;
+            const isSelected = product.name === preset.name && product.masterImageUrl === preset.masterImageUrl;
             return (
               <button
                 key={preset.name}
@@ -87,24 +87,35 @@ export const ProductForm: React.FC<Props> = ({
               </button>
             );
           })}
-          <button
-            type="button"
-            onClick={() =>
-              onChange({
-                name: '',
-                category: '',
-                tagline: '',
-                description: '',
-                materials: '',
-                colors: ['#0A0A0A', '#E0E0E0'],
-                aesthetic: 'Minimalist Modern Luxury',
-                masterImageUrl: undefined,
-              })
-            }
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-950/70 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-all"
-          >
-            + Blank Custom
-          </button>
+          {(() => {
+            const isCustom = !PRODUCT_PRESETS.some(
+              (p) => p.name === product.name && p.masterImageUrl === product.masterImageUrl
+            );
+            return (
+              <button
+                type="button"
+                onClick={() =>
+                  onChange({
+                    name: '',
+                    category: '',
+                    tagline: '',
+                    description: '',
+                    materials: '',
+                    colors: ['#0A0A0A', '#E0E0E0', '#C68B59'],
+                    aesthetic: 'Modern Minimalist Luxury',
+                    masterImageUrl: undefined,
+                  })
+                }
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  isCustom
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 font-semibold'
+                    : 'bg-slate-950/70 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800'
+                }`}
+              >
+                + Blank Custom
+              </button>
+            );
+          })()}
         </div>
       </div>
 

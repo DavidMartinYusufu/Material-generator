@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ProductData,
   MediumDefinition,
@@ -14,7 +14,7 @@ import { MasterProductCard } from './components/MasterProductCard';
 import { MediumSelector } from './components/MediumSelector';
 import { CampaignGallery } from './components/CampaignGallery';
 import { LightboxModal } from './components/LightboxModal';
-import { compositeMediumShot } from './utils/mediaCompositor';
+import { compositeMediumShot, compositeStudioAnchorPackshot } from './utils/mediaCompositor';
 import {
   generateCampaignBoardPng,
   triggerPngDownload,
@@ -22,18 +22,41 @@ import {
 } from './utils/campaignBoardExporter';
 import { AlertCircle, X, Sparkles, CheckCircle2 } from 'lucide-react';
 
+const STORAGE_KEY = 'mmg_product_data_v2';
+const STORAGE_MEDIUMS_KEY = 'mmg_mediums_v2';
+
 export default function App() {
-  // Initial product is preset 0 (NOIR Cold Brew)
-  const [product, setProduct] = useState<ProductData>(PRODUCT_PRESETS[0]);
+  // Load initial product from localStorage or default to NOIR preset
+  const [product, setProduct] = useState<ProductData>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed.name === 'string') {
+          return parsed;
+        }
+      }
+    } catch (_e) {
+      // ignore
+    }
+    return PRODUCT_PRESETS[0];
+  });
+
   const [visualBible, setVisualBible] = useState<VisualBible | null>(null);
 
-  // Selected mediums (starts with Billboard, Newspaper, Social Post, Magazine)
-  const [selectedMediumIds, setSelectedMediumIds] = useState<string[]>([
-    'billboard',
-    'newspaper',
-    'social_post',
-    'magazine',
-  ]);
+  // Selected mediums
+  const [selectedMediumIds, setSelectedMediumIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_MEDIUMS_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (_e) {}
+    return ['billboard', 'newspaper', 'social_post', 'magazine'];
+  });
 
   const [customMediums, setCustomMediums] = useState<MediumDefinition[]>([]);
   const [shots, setShots] = useState<GeneratedShot[]>([]);
@@ -45,12 +68,54 @@ export default function App() {
   const [activeLightboxShot, setActiveLightboxShot] = useState<GeneratedShot | null>(null);
   const [globalError, setGlobalError] = useState<string | null>(null);
 
+  // Sync product to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(product));
+    } catch (_e) {}
+  }, [product]);
+
+  // Sync selected mediums to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_MEDIUMS_KEY, JSON.stringify(selectedMediumIds));
+    } catch (_e) {}
+  }, [selectedMediumIds]);
+
   // Switch preset
   const handleSelectPreset = (preset: ProductData) => {
     setProduct(preset);
     setVisualBible(null);
     setShots([]);
     setGlobalError(null);
+  };
+
+  // Intelligent product change handler:
+  // If the user alters product name, and the previous masterImageUrl was a preset image (/images/...),
+  // clear it so the old preset photo does not contaminate their new product!
+  const handleProductChange = (updated: Partial<ProductData>) => {
+    setProduct((prev) => {
+      const nameChanged = updated.name !== undefined && updated.name !== prev.name;
+      const isPresetImage = prev.masterImageUrl && prev.masterImageUrl.startsWith('/images/');
+
+      const newMasterImageUrl =
+        updated.masterImageUrl !== undefined
+          ? updated.masterImageUrl
+          : nameChanged && isPresetImage
+          ? undefined
+          : prev.masterImageUrl;
+
+      return {
+        ...prev,
+        ...updated,
+        masterImageUrl: newMasterImageUrl,
+      };
+    });
+
+    // Invalidate stale visual bible if identity details change
+    if (updated.name !== undefined || updated.description !== undefined || updated.category !== undefined) {
+      setVisualBible(null);
+    }
   };
 
   // Toggle medium selection
@@ -121,23 +186,24 @@ async function safeFetchJson<T = any>(
 
 // Fallback visual consistency guide
 function createLocalConsistencyBible(product: ProductData, selectedMediums: string[]): VisualBible {
+  const brand = product.name || 'Brand';
   return {
-    brandName: product.name || 'Brand',
+    brandName: brand,
     visualIdentity: {
       primaryColors: product.colors.length > 0 ? product.colors : ['#0A0A0A', '#E0E0E0', '#C68B59'],
       materialsAndTexture: product.materials || 'Anodized matte metal, micro-textured surface',
       geometricFormFactor: product.description || 'Geometric form factor',
-      brandingAndLogoDetails: `Minimalist typography for ${product.name}`,
+      brandingAndLogoDetails: `Minimalist typography for ${brand}`,
       keyDistinguishingFeatures: ['Solitary silhouette', 'High tactile contrast'],
     },
-    masterPackshotPrompt: `Studio packshot of ${product.name}, ${product.description}. Placed on a minimalist plinth, clean studio lighting. Absolutely zero people.`,
+    masterPackshotPrompt: `Studio packshot of ${brand}, ${product.description}. Placed on a minimalist plinth, clean studio lighting. Absolutely zero people.`,
     mediumPrompts: selectedMediums.map((mid) => ({
       mediumId: mid,
       mediumTitle: mid.replace(/_/g, ' ').toUpperCase(),
       aspectRatio: mid === 'billboard' ? '16:9' : mid === 'newspaper' ? '3:4' : mid === 'social_post' ? '1:1' : '16:9',
       recommendedLighting: 'Architectural commercial lighting',
-      detailedPrompt: `High-impact commercial advertising visual of ${product.name} featured as a ${mid.replace(/_/g, ' ')}. ${product.description}. Absolutely zero people.`,
-      headlineText: `INTRODUCING ${product.name.toUpperCase()}`,
+      detailedPrompt: `High-impact commercial advertising visual of ${brand} featured as a ${mid.replace(/_/g, ' ')}. ${product.description}. Absolutely zero people.`,
+      headlineText: `INTRODUCING ${brand.toUpperCase()}`,
     })),
   };
 }
@@ -145,7 +211,7 @@ function createLocalConsistencyBible(product: ProductData, selectedMediums: stri
   // Generate consistency bible and master packshot anchor
   const handleGenerateAnchorShot = async () => {
     if (!product.name || !product.description) {
-      setGlobalError('Please provide a product name and description.');
+      setGlobalError('Please provide a product name and physical silhouette description.');
       return;
     }
 
@@ -190,8 +256,8 @@ Razor-sharp focus, clean contact shadows, neutral matte studio backdrop.`;
       if (shotRes.ok && shotRes.data?.imageUrl) {
         anchorUrl = shotRes.data.imageUrl;
       } else {
-        // Fallback: Generate clean studio anchor packshot using compositor
-        anchorUrl = await compositeMediumShot('social_post', product, product.name, '1:1');
+        // Fallback: Generate clean dedicated master studio anchor packshot using compositor
+        anchorUrl = await compositeStudioAnchorPackshot(product);
       }
 
       if (anchorUrl) {
@@ -211,16 +277,18 @@ Razor-sharp focus, clean contact shadows, neutral matte studio backdrop.`;
   // Generate full campaign across selected mediums
   const handleGenerateCampaign = async () => {
     if (selectedMediumIds.length === 0) return;
+    if (!product.name.trim() || !product.description.trim()) {
+      setGlobalError('Please enter a product name and physical silhouette description before generating campaign.');
+      return;
+    }
 
     try {
       setIsGeneratingCampaign(true);
       setGlobalError(null);
 
+      // Ensure we have a fresh consistency bible specifically for this product
       let currentBible = visualBible;
-      let currentAnchor = product.masterImageUrl;
-
-      // Ensure we have a consistency bible first
-      if (!currentBible) {
+      if (!currentBible || currentBible.brandName.trim().toLowerCase() !== product.name.trim().toLowerCase()) {
         const bibleRes = await safeFetchJson<{ data: VisualBible }>('/api/generate-consistency-bible', {
           productName: product.name,
           productCategory: product.category,
@@ -235,6 +303,17 @@ Razor-sharp focus, clean contact shadows, neutral matte studio backdrop.`;
           currentBible = createLocalConsistencyBible(product, selectedMediumIds);
         }
         setVisualBible(currentBible);
+      }
+
+      // If product has no master anchor packshot yet, auto-synthesize one so all shots condition on it!
+      let currentAnchor = product.masterImageUrl;
+      if (!currentAnchor) {
+        currentAnchor = await compositeStudioAnchorPackshot(product);
+        setProduct((prev) => ({
+          ...prev,
+          masterImageUrl: currentAnchor,
+          masterImageMimeType: 'image/png',
+        }));
       }
 
       const allMediums = [...AVAILABLE_MEDIUMS, ...customMediums];
@@ -398,21 +477,25 @@ Razor-sharp focus, clean contact shadows, neutral matte studio backdrop.`;
     }
   };
 
-  // Reset all
+  // Reset all: resets to clean blank custom state, clears localStorage, shots, and bible
   const handleReset = () => {
-    setProduct({
+    const blankProduct: ProductData = {
       name: '',
       category: '',
       tagline: '',
       description: '',
       materials: '',
-      colors: ['#0A0A0A', '#E0E0E0'],
-      aesthetic: 'Minimalist Luxury',
+      colors: ['#0A0A0A', '#E0E0E0', '#C68B59'],
+      aesthetic: 'Modern Minimalist Luxury',
       masterImageUrl: undefined,
-    });
+    };
+    setProduct(blankProduct);
     setVisualBible(null);
     setShots([]);
     setGlobalError(null);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (_e) {}
   };
 
   const completedCount = shots.filter((s) => s.status === 'completed' && s.imageUrl).length;
@@ -475,7 +558,7 @@ Razor-sharp focus, clean contact shadows, neutral matte studio backdrop.`;
           <div className="lg:col-span-5 xl:col-span-5">
             <ProductForm
               product={product}
-              onChange={(updated) => setProduct((p) => ({ ...p, ...updated }))}
+              onChange={handleProductChange}
               onGenerateAnchorShot={handleGenerateAnchorShot}
               isGeneratingAnchor={isGeneratingAnchor}
               onSelectPreset={handleSelectPreset}

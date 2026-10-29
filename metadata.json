@@ -1,0 +1,6 @@
+{
+  "name": "Marketing Materials Generator",
+  "description": "Generate multi-medium advertising campaigns across billboards, newspapers, social posts, and print with strict product consistency and zero people using Nano-Banana.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

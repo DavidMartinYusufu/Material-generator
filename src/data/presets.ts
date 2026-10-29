@@ -92,7 +92,7 @@ export const PRODUCT_PRESETS: ProductData[] = [
     materials: 'Ultra-matte anodized black aluminum, burnished copper foil rim, micro-embossed contour lines',
     colors: ['#0F0F12', '#C68B59', '#F4F4F6'],
     aesthetic: 'Moody minimalist luxury, dark architectural elegance, high tactile contrast',
-    masterImageUrl: '/src/assets/images/noir_cold_brew_packshot_1793191064047.jpg',
+    masterImageUrl: '/images/noir.jpg',
   },
   {
     name: 'KRONOS Chrono-Titanium',
@@ -102,7 +102,7 @@ export const PRODUCT_PRESETS: ProductData[] = [
     materials: 'Grade 5 matte titanium, double-domed anti-reflective sapphire crystal, charcoal sunburst dial, fluorocarbon elastomer strap',
     colors: ['#282A2E', '#E85D04', '#71757E', '#FFFFFF'],
     aesthetic: 'Swiss precision engineering, technical brutalism, hyper-detailed mechanical macro finish',
-    masterImageUrl: '/src/assets/images/kronos_watch_packshot_1793191065149.jpg',
+    masterImageUrl: '/images/kronos.jpg',
   },
   {
     name: 'AURA 01 Diffuser',
@@ -112,7 +112,7 @@ export const PRODUCT_PRESETS: ProductData[] = [
     materials: 'Natural unfilled beige travertine stone, solid brushed raw brass, frosted silicone light-guide ring',
     colors: ['#D8CFBC', '#B5944A', '#EFECE6', '#1E1E24'],
     aesthetic: 'Wabi-sabi architectural sculpture, warm organic minimalism, meditative gallery staging',
-    masterImageUrl: '/src/assets/images/aura_diffuser_packshot_1793191066583.jpg',
+    masterImageUrl: '/images/aura.jpg',
   },
   {
     name: 'TERRA Botānica Serum',
@@ -122,7 +122,7 @@ export const PRODUCT_PRESETS: ProductData[] = [
     materials: 'Heavy flint cobalt-blue glass, sustainably harvested walnut wood, 100% cotton fiber deckled label, gold foil stamping',
     colors: ['#0A2540', '#634832', '#FDFBF7', '#D4AF37'],
     aesthetic: 'Modern apothecary, botanical clinical alchemy, warm tactile luxury',
-    masterImageUrl: '/src/assets/images/terra_serum_packshot_1793191067580.jpg',
+    masterImageUrl: '/images/terra.jpg',
   },
   {
     name: 'SOLIS Acoustic Plinth',
@@ -132,6 +132,6 @@ export const PRODUCT_PRESETS: ProductData[] = [
     materials: 'Bent steam-curved natural birch plywood, acoustic melange wool textile, precision knurled aluminum dial',
     colors: ['#D6C29E', '#EAE6DF', '#4A4A4A', '#8C8275'],
     aesthetic: 'Nordic mid-century audio craft, acoustic warmth, tactile studio minimalism',
-    masterImageUrl: '/src/assets/images/solis_speaker_packshot_1793191068205.jpg',
+    masterImageUrl: '/images/solis.jpg',
   },
 ];

@@ -11,6 +11,9 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 // Support high payload limit for base64 image reference uploads
 app.use(express.json({ limit: '50mb' }));
 
+// Serve static assets from public/ directory
+app.use(express.static('public'));
+
 // Shared GoogleGenAI instance with telemetry header
 const getGenAIClient = () => {
   const apiKey = process.env.GEMINI_API_KEY || '';

@@ -42,82 +42,99 @@ function buildConsistencySpecification(
   productCategory: string,
   productDescription: string,
   brandAesthetic: string,
-  selectedMediums: string[]
+  selectedMediums: string[],
+  materials?: string,
+  colors?: string[],
+  tagline?: string,
+  packagingStructure?: string,
+  boxFinish?: string
 ) {
   const brand = productName || 'Product';
-  const category = productCategory || 'Luxury Commercial Goods';
-  const desc = productDescription || 'Architectural industrial design';
+  const category = productCategory || 'Commercial Goods';
+  let desc = productDescription || 'Architectural industrial design';
   const aesthetic = brandAesthetic || 'Modern Minimalist Luxury';
+  let mat = materials || 'Authentic tactile finish and precision engineered materials';
+  const col = colors && colors.length > 0 ? colors : ['#0A0A0A', '#E0E0E0', '#C68B59'];
+  const userTagline = tagline || 'Engineered without compromise';
+
+  if (packagingStructure && packagingStructure !== 'none') {
+    const structNames: Record<string, string> = {
+      gable_handle_box: 'Gable-top carry carton with precision integrated die-cut oval handle and triangular folded gusset flaps',
+      canva_multi_box: 'Dynamic geometric studio array of rectangular cartons tilted at 30-degree isometric angles on architectural plinth cubes with bold diagonal typography',
+      kraft_unboxing_mailer: 'Corrugated unbleached brown kraft unboxing subscription mailer with open lid resting back at 75 degrees and crinkle paper filler nest',
+      rigid_ribbon_box: 'Luxury two-piece square rigid presentation gift box wrapped with 38mm lustrous satin ribbon tied in a double bow knot with copper foil stamping',
+      sliding_sleeve_drawer: 'Architectural two-piece sliding drawer matchbox carton with rigid outer sleeve and contrasting slide-out interior tray with ribbon pull tab',
+      packaging_dieline_net: 'Flat unfolded technical CAD packaging dieline template blueprint with fold crease scores, cut lines, glue tabs, and color calibration bars',
+    };
+    const packDetails = structNames[packagingStructure] || packagingStructure;
+    desc = `${desc}. Packaging Architecture: ${packDetails}`;
+  }
+
+  if (boxFinish) {
+    mat = `${mat}. Specialty Finish: ${boxFinish}`;
+  }
 
   const mediumPrompts = (selectedMediums || ['billboard', 'newspaper', 'social_post', 'magazine']).map((mid: string) => {
     let title = mid.replace(/_/g, ' ').toUpperCase();
     let ratio = '16:9';
     let lighting = 'High-key architectural lighting';
     let detailedPrompt = '';
-    let headline = `INTRODUCING ${brand.toUpperCase()}`;
+    let headline = userTagline.toUpperCase();
 
     switch (mid) {
       case 'billboard':
         title = 'HIGHWAY MEGABOARD';
         ratio = '16:9';
         lighting = 'Twilight blue hour with dramatic spotlight cones';
-        headline = 'SILENCE THE ORDINARY';
-        detailedPrompt = `Monumental outdoor billboard ad of ${brand} high above a modern metropolis at twilight. ${desc}. Deep blue-hour sky, steel frame truss armature, overhead commercial spotlight fixtures washing warm illumination across the billboard face. Razor-sharp commercial finish. Strictly zero people.`;
+        detailedPrompt = `Monumental outdoor billboard ad of ${brand} (${category}) perched above a metropolis at twilight. Physical form factor: ${desc}. Materials: ${mat}. Palette: ${col.join(', ')}. Overhead commercial spotlight cones, steel frame truss armature, sharp commercial staging. Strictly zero people.`;
         break;
       case 'newspaper':
         title = 'PRINTED BROADSHEET NEWSPAPER';
         ratio = '3:4';
         lighting = 'Even natural gallery daylight highlighting newsprint texture';
-        headline = 'ENGINEERED FOR THE NEXT CENTURY';
-        detailedPrompt = `Authentic full-page newspaper display advertisement of ${brand} in a broadsheet financial journal. ${desc}. Editorial serif columns, authentic halftone ink texture, subtle paper fiber grain, monochrome and duotone ink balance. Strictly zero people.`;
+        detailedPrompt = `Authentic full-page newspaper display advertisement of ${brand} (${category}) in a financial broadsheet journal. Physical form factor: ${desc}. Materials: ${mat}. Editorial serif columns, authentic halftone ink texture, subtle paper fiber grain. Strictly zero people.`;
         break;
       case 'social_post':
         title = 'SOCIAL MEDIA FEED (1:1)';
         ratio = '1:1';
         lighting = 'Dual diffused softboxes with subtle directional rim light';
-        headline = 'FORM MEETS FUNCTION';
-        detailedPrompt = `Clean 1:1 square studio hero shot of ${brand} on an architectural stone plinth. ${desc}. Balanced contact shadows, neutral matte obsidian background, precision product reflections. Strictly zero people.`;
+        detailedPrompt = `Precision 1:1 square studio hero shot of ${brand} (${category}) resting on an architectural stone plinth. Physical form factor: ${desc}. Materials: ${mat}. Palette: ${col.join(', ')}. Balanced contact shadows, neutral matte background. Strictly zero people.`;
         break;
       case 'social_story':
         title = 'MOBILE STORY / REEL (9:16)';
         ratio = '9:16';
         lighting = 'High-contrast edge lights with atmospheric gradient fill';
-        headline = 'TASTE THE HORIZON';
-        detailedPrompt = `Full-bleed 9:16 vertical mobile commercial layout for ${brand}. ${desc}. Deep ambient color gradient, dramatic depth of field, bold vertical composition. Strictly zero people.`;
+        detailedPrompt = `Full-bleed 9:16 vertical mobile commercial layout for ${brand} (${category}). Physical form factor: ${desc}. Materials: ${mat}. Deep atmospheric color gradient, dramatic depth of field, bold vertical composition. Strictly zero people.`;
         break;
       case 'magazine':
         title = 'GLOSSY MAGAZINE DOUBLE SPREAD';
         ratio = '16:9';
         lighting = 'Warm afternoon sunlight with soft botanical window shadows';
-        headline = 'THE ESSENCE OF PURITY';
-        detailedPrompt = `Editorial double-page spread of ${brand} inside a luxury coffee table magazine lying open on a Calacatta marble slab. ${desc}. Subtle paper curl, natural sunlight reflections. Strictly zero people.`;
+        detailedPrompt = `Editorial double-page spread of ${brand} (${category}) inside a luxury coffee table magazine lying open on a Calacatta marble slab. Physical form factor: ${desc}. Materials: ${mat}. Subtle paper curl, natural sunlight reflections. Strictly zero people.`;
         break;
       case 'subway_kiosk':
         title = 'TRANSIT LIGHTBOX VITRINE';
         ratio = '3:4';
         lighting = 'Even 6000K internal backlit dispersion';
-        headline = 'ALWAYS MOVING FORWARD';
-        detailedPrompt = `Backlit advertising lightbox in a polished terrazzo subway station concourse featuring ${brand}. ${desc}. Brushed aluminum frame, glossy station reflections. Strictly zero people.`;
+        detailedPrompt = `Backlit advertising lightbox in a polished terrazzo subway concourse featuring ${brand} (${category}). Physical form factor: ${desc}. Materials: ${mat}. Brushed aluminum frame, glossy station reflections. Strictly zero people.`;
         break;
       case 'bus_shelter':
         title = 'STREET SHELTER KIOSK';
         ratio = '3:4';
         lighting = 'Moody twilight ambiance with ambient neon street reflections';
-        headline = 'EVERYDAY ELEVATION';
-        detailedPrompt = `Illuminated street shelter poster vitrine at dusk showcasing ${brand}. ${desc}. Glass reflection, urban evening ambiance. Strictly zero people.`;
+        detailedPrompt = `Illuminated street shelter poster vitrine at dusk showcasing ${brand} (${category}). Physical form factor: ${desc}. Materials: ${mat}. Glass reflection, urban evening ambiance. Strictly zero people.`;
         break;
       case 'storefront':
         title = 'FLAGSHIP STOREFRONT WINDOW';
         ratio = '16:9';
         lighting = 'Precision 3000K overhead spots';
-        headline = 'CRAFTED WITHOUT COMPROMISE';
-        detailedPrompt = `Luxury boutique window vitrine displaying ${brand} on a floating minimal plinth. ${desc}. Architectural downlights, exterior glass reflection. Strictly zero people.`;
+        detailedPrompt = `Luxury boutique window vitrine displaying ${brand} (${category}) on a floating minimal plinth. Physical form factor: ${desc}. Materials: ${mat}. Architectural downlights, exterior glass reflection. Strictly zero people.`;
         break;
       default:
         title = mid.replace(/_/g, ' ').toUpperCase();
         ratio = '16:9';
         lighting = 'Architectural studio lighting';
-        detailedPrompt = `High-impact commercial advertising visual of ${brand} featured as ${title}. ${desc}. Pristine architectural staging. Strictly zero people.`;
+        detailedPrompt = `High-impact commercial advertising visual of ${brand} (${category}) featured as ${title}. Physical form factor: ${desc}. Materials: ${mat}. Pristine architectural staging. Strictly zero people.`;
         break;
     }
 
@@ -134,13 +151,13 @@ function buildConsistencySpecification(
   return {
     brandName: brand,
     visualIdentity: {
-      primaryColors: ['#0A0A0A', '#E0E0E0', '#C68B59'],
-      materialsAndTexture: 'Anodized matte metal, micro-textured surface, anti-reflective coating',
-      geometricFormFactor: desc,
-      brandingAndLogoDetails: `Stark minimalist lettermark for ${brand}`,
-      keyDistinguishingFeatures: ['Solitary silhouette', 'High tactile contrast', 'Clean edge chamfers'],
+      primaryColors: col,
+      materialsAndTexture: mat,
+      geometricFormFactor: `${category}: ${desc}`,
+      brandingAndLogoDetails: `Minimalist typography for ${brand}`,
+      keyDistinguishingFeatures: [`Physical archetype: ${category}`, `Unique geometry: ${desc}`, 'Strictly zero people'],
     },
-    masterPackshotPrompt: `Studio packshot of ${brand}, ${desc}. Centered on a sculptural stone podium, diffused rim lighting, neutral matte studio backdrop. Strictly zero people.`,
+    masterPackshotPrompt: `Studio product packshot of ${brand} (${category}). Physical form factor: ${desc}. Materials: ${mat}. Brand aesthetic: ${aesthetic}. Centered on a sculptural stone podium, diffused rim lighting, neutral matte studio backdrop. Strictly zero people.`,
     mediumPrompts,
   };
 }
@@ -148,7 +165,18 @@ function buildConsistencySpecification(
 // Endpoint to synthesize a visual consistency bible and per-medium prompt plans
 app.post('/api/generate-consistency-bible', async (req, res) => {
   try {
-    const { productName, productCategory, productDescription, brandAesthetic, selectedMediums } = req.body;
+    const {
+      productName,
+      productCategory,
+      productDescription,
+      brandAesthetic,
+      selectedMediums,
+      materials,
+      colors,
+      tagline,
+      packagingStructure,
+      boxFinish,
+    } = req.body;
 
     if (!productName || !productDescription) {
       return res.status(400).json({ success: false, error: 'Product name and description are required.' });
@@ -160,7 +188,12 @@ app.post('/api/generate-consistency-bible', async (req, res) => {
       productCategory,
       productDescription,
       brandAesthetic,
-      selectedMediums
+      selectedMediums,
+      materials,
+      colors,
+      tagline,
+      packagingStructure,
+      boxFinish
     );
 
     res.json({ success: true, data: specification });
@@ -168,10 +201,15 @@ app.post('/api/generate-consistency-bible', async (req, res) => {
     // Failsafe response with HTTP 200
     const fallback = buildConsistencySpecification(
       req.body?.productName || 'Product',
-      req.body?.productCategory || 'Commercial',
+      req.body?.productCategory || 'Commercial Goods',
       req.body?.productDescription || 'Clean silhouette',
       req.body?.brandAesthetic || 'Modern Luxury',
-      req.body?.selectedMediums || ['billboard', 'newspaper', 'social_post']
+      req.body?.selectedMediums || ['billboard', 'newspaper', 'social_post'],
+      req.body?.materials,
+      req.body?.colors,
+      req.body?.tagline,
+      req.body?.packagingStructure,
+      req.body?.boxFinish
     );
     res.json({ success: true, data: fallback });
   }

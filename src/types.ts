@@ -11,6 +11,15 @@ export interface MediumDefinition {
   icon: string;
 }
 
+export type PackagingStructureType =
+  | 'none'
+  | 'gable_handle_box'
+  | 'canva_multi_box'
+  | 'kraft_unboxing_mailer'
+  | 'rigid_ribbon_box'
+  | 'sliding_sleeve_drawer'
+  | 'packaging_dieline_net';
+
 export interface ProductData {
   name: string;
   category: string;
@@ -19,6 +28,8 @@ export interface ProductData {
   materials: string;
   colors: string[];
   aesthetic: string;
+  packagingStructure?: PackagingStructureType;
+  boxFinish?: string;
   masterImageUrl?: string;
   masterImageMimeType?: string;
 }
